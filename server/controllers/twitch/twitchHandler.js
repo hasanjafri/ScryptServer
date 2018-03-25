@@ -14,7 +14,7 @@ const tokenURL = 'https://id.twitch.tv/oauth2/token';
 const callbackURL = `${process.env.SERVER_HOST}/api/twitch/callback`;
 
 twitchHandler.init = (req, res) => {
-    return res.redirect(`${authorizationURL}?client_id=${twitchClientId}&redirect_uri=${callbackURL}&response_type=code`);
+    return res.redirect(`${authorizationURL}?client_id=${twitchClientId}&redirect_uri=${callbackURL}&response_type=code&scope=user_read`);
 };
 
 twitchHandler.receiveCallback = (req, res) => {
@@ -26,7 +26,15 @@ twitchHandler.receiveCallback = (req, res) => {
             const { access_token, expires_in, refresh_token } = JSON.parse(body);
             // TODO: store access_token/refresh_token in user collection.
             // TODO: call different endpoint using this access_token.
-            
+
+            // Example call
+            request({
+                url: 'https://api.twitch.tv/helix/users?login=singsing',
+                headers: { 'Client-ID': twitchClientId },
+                auth: { bearer: access_token }
+            }, (err, res) => {
+                console.log('printing api call', res.body);
+            });
         } else {
             console.log(JSON.parse(body));
         }
