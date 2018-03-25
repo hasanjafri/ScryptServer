@@ -20,4 +20,4 @@ function jsonSuccess(res, data = {}, status = true) {
     });
 };
 
-export default { jsonErr, jsonValidationErr, jsonSuccess };
+export { jsonErr, jsonValidationErr, jsonSuccess };

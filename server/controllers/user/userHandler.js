@@ -3,10 +3,15 @@ import bcrypt from 'bcrypt';
 import mongoose from 'mongoose';
 import crypto from 'crypto';
 
+import { capitalize } from '../../utils';
 import { jsonErr, jsonSuccess, jsonValidationErr } from '../../utils/json';
+import { sendEmail } from '../send/sendAction';
+import { createCustomer } from '../stripe/stripeAction';
 import constants from '../../utils/constants';
 
 import User from './../../models/User';
+
+const urlParser = require('url');
 
 const userHandler = {};
 
@@ -26,8 +31,9 @@ userHandler.login = (req, res) => {
         if (user.verification && !user.verification.status) {
             return jsonErr(res, 'Account not verified', 401);
         }
-        if ( !user.comparePassword(req.body.password))
+        if ( !user.comparePassword(req.body.password)) {
             return jsonErr(res, 'Authentication failed. Invalid user or password', 401);
+        }
 
         const { username, _id } = user;
         const token = jwt.sign({ username, _id }, process.env.JWT_KEY, {
@@ -39,9 +45,9 @@ userHandler.login = (req, res) => {
 };
 
 userHandler.register = (req, res) => {
-    const { firstName, lastName, username, password, confirmPassword, timezone } = req.body;
+    const { firstName, lastName, username, password, confirmPassword } = req.body;
     // Validation
-    if (!firstName || !lastName || !username || !password || !confirmPassword || !timezone) {
+    if (!firstName || !lastName || !username || !password || !confirmPassword) {
         return jsonErr(res, 'All fields must be completed.');
     } else if (!username.includes('@')) {
         return jsonErr(res, 'Username must be an e-mail.');
@@ -65,7 +71,7 @@ userHandler.register = (req, res) => {
             newUser.verification.token = buf.toString('hex');
             newUser.verification.expiry = Date.now() + constants.VERIFICATION_TOKEN_EXPIRE_TIME;
             newUser.save().then(user => {
-                const refererUrl = urlParser.parse(req.headers.referer);
+                const refererUrl = urlParser.parse(req.headers.referer ? req.headers.referer : process.env.UI_HOST);
                 const link = `${refererUrl.protocol}//${refererUrl.host}/login/verify/${buf.toString('hex')}`;
                 sendEmail({
                     title: 'Scrypt server account verification',

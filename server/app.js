@@ -3,6 +3,8 @@ import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 import jwt from 'jsonwebtoken';
 
+import { jsonErr } from './utils/json'; 
+
 import routes from './routes';
 
 mongoose.Promise = global.Promise;
@@ -29,7 +31,7 @@ app.use((req, res, next) => {
     next();
 });
 app.use('/api', routes);
-app.use((req, res) => json.err(res, {
+app.use((req, res) => jsonErr(res, {
     url: `${req.originalUrl} not found`
 }, 404));
 

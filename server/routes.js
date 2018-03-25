@@ -3,6 +3,7 @@ import middleware from './middleware';
 
 // Controller Imports
 import userHandler from './controllers/user/userHandler';
+import twitchHandler from './controllers/twitch/twitchHandler';
 
 const routes = express();
 
@@ -19,6 +20,8 @@ routes.post('/user/resetPassword', userHandler.resetPassword);
 routes.post('/user/changePassword', userHandler.changePassword);
 routes.post('/user/resendVerificationEmail', userHandler.resendVerificationEmail);
 
-// Admin
+// Twitch
+routes.get('/twitch/init', twitchHandler.init);
+routes.get('/twitch/callback', twitchHandler.receiveCallback);
 
 export default routes;
